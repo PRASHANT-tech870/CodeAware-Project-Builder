@@ -1,0 +1,245 @@
+.project-builder {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  background-color: #f5f7fa;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: white;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-info h1 {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  margin-bottom: 0.2rem;
+}
+
+.project-info p {
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.project-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.tech-stack, .expertise, .step-counter {
+  display: flex;
+  align-items: center;
+}
+
+.reset-button {
+  padding: 0.6rem 1.2rem;
+  background-color: #f8f9fa;
+  color: #2c3e50;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-button:hover {
+  background-color: #e9ecef;
+}
+
+.project-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.guidance-panel {
+  width: 35%;
+  max-width: 450px;
+  min-width: 300px;
+  background-color: white;
+  border-right: 1px solid #e9ecef;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.step-navigation {
+  padding: 1rem;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: center;
+}
+
+.next-step-button {
+  padding: 0.8rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.next-step-button:hover {
+  background-color: #2980b9;
+}
+
+.next-step-button:disabled {
+  background-color: #a0b7c8;
+  cursor: not-allowed;
+}
+
+.question-section {
+  padding: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.question-section h3 {
+  margin-bottom: 0.8rem;
+  font-size: 1.1rem;
+  color: #2c3e50;
+}
+
+.question-form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.question-form input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.question-form input:focus {
+  outline: none;
+  border-color: #3498db;
+}
+
+.question-form button {
+  padding: 0.8rem 1.2rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.question-form button:hover {
+  background-color: #2980b9;
+}
+
+.question-form button:disabled {
+  background-color: #a0b7c8;
+  cursor: not-allowed;
+}
+
+.ai-answer {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 3px solid #3498db;
+}
+
+.ai-answer h4 {
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.answer-content {
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.coding-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-container, .output-container {
+  height: 50%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.editor-container {
+  border-bottom: 1px solid #e9ecef;
+}
+
+.error-message {
+  padding: 1rem;
+  background-color: #feeaea;
+  color: #e74c3c;
+  border-radius: 0;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Responsive layouts */
+@media (max-width: 992px) {
+  .project-content {
+    flex-direction: column;
+  }
+  
+  .guidance-panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: auto;
+    border-right: none;
+    border-bottom: 1px solid #e9ecef;
+    max-height: 50%;
+  }
+  
+  .coding-panel {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+  
+  .project-meta {
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .reset-button {
+    width: 100%;
+  }
+  
+  .question-form {
+    flex-direction: column;
+  }
+} 
