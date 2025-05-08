@@ -177,38 +177,57 @@ footer {
 }`
 };
 
-const languageOptions = [
+const webLanguageOptions = [
   { value: "html", label: "HTML", extension: ".html" },
   { value: "css", label: "CSS", extension: ".css" },
   { value: "javascript", label: "JavaScript", extension: ".js" },
+];
+
+const pythonLanguageOptions = [
   { value: "python", label: "Python", extension: ".py" },
 ];
 
-const CodeEditor = ({ onCodeSubmit, onCodeChange, isLoading, initialLanguage }) => {
+const CodeEditor = ({ onCodeSubmit, onCodeChange, isLoading, initialLanguage, projectType, currentCode = {} }) => {
   const [language, setLanguage] = useState(initialLanguage || "html");
   const [code, setCode] = useState("");
   const editorRef = useRef(null);
+  const initializedRef = useRef(false);
 
-  // Initialize code based on selected language when component mounts or initialLanguage changes
+  // Get the appropriate language options based on project type
+  const languageOptions = projectType === "python+streamlit" 
+    ? pythonLanguageOptions 
+    : webLanguageOptions;
+
+  // Initialize code based on selected language and currentCode
   useEffect(() => {
-    if (initialLanguage) {
+    if (initialLanguage && !initializedRef.current) {
       setLanguage(initialLanguage);
-      setCode(defaultCode[initialLanguage]);
+      
+      // Use currentCode if available, otherwise use default
+      const initialCode = currentCode[initialLanguage] || defaultCode[initialLanguage];
+      setCode(initialCode);
+      
       if (onCodeChange) {
-        onCodeChange(defaultCode[initialLanguage], initialLanguage);
+        onCodeChange(initialCode, initialLanguage);
       }
+      
+      initializedRef.current = true;
     }
-  }, [initialLanguage, onCodeChange]);
+  }, [initialLanguage, onCodeChange, currentCode]);
 
-  // Initialize the default code if code is empty
+  // Update code when language changes to use the saved code for that language
   useEffect(() => {
-    if (!code && language) {
+    // When language changes, load the saved code for that language if available
+    if (currentCode && currentCode[language]) {
+      setCode(currentCode[language]);
+    } else if (!currentCode[language] && !code) {
+      // If no saved code for this language, use default code
       setCode(defaultCode[language]);
       if (onCodeChange) {
         onCodeChange(defaultCode[language], language);
       }
     }
-  }, [code, language, onCodeChange]);
+  }, [language, currentCode]);
 
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
@@ -217,13 +236,24 @@ const CodeEditor = ({ onCodeSubmit, onCodeChange, isLoading, initialLanguage }) 
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
     setLanguage(newLanguage);
-    setCode(defaultCode[newLanguage]);
-    if (onCodeChange) {
-      onCodeChange(defaultCode[newLanguage], newLanguage);
+    
+    // Load the saved code for the new language if available
+    if (currentCode && currentCode[newLanguage]) {
+      setCode(currentCode[newLanguage]);
+      if (onCodeChange) {
+        onCodeChange(currentCode[newLanguage], newLanguage);
+      }
+    } else {
+      // If no saved code, use default
+      setCode(defaultCode[newLanguage]);
+      if (onCodeChange) {
+        onCodeChange(defaultCode[newLanguage], newLanguage);
+      }
     }
   };
 
   const handleCodeChange = (value) => {
+    console.log("Code changed:", value ? value.substring(0, 20) + "..." : "empty");
     setCode(value);
     if (onCodeChange) {
       onCodeChange(value, language);
@@ -281,6 +311,7 @@ const CodeEditor = ({ onCodeSubmit, onCodeChange, isLoading, initialLanguage }) 
             automaticLayout: true,
             tabSize: 2,
             wordWrap: "on",
+            readOnly: false,
           }}
         />
       </div>

@@ -16,7 +16,7 @@ const ProjectStep = ({ stepData, stepNumber }) => {
     );
   }
   
-  const { title, description, code, expected_outcome, feedback } = stepData;
+  const { title, description, code, expected_outcome, feedback, quiz_question } = stepData;
   
   return (
     <div className="project-step">
@@ -51,6 +51,15 @@ const ProjectStep = ({ stepData, stepNumber }) => {
             <h4>Expected Outcome</h4>
             <div className="expected-content">
               {expected_outcome}
+            </div>
+          </div>
+        )}
+
+        {quiz_question && (
+          <div className="step-quiz-question">
+            <h4>Thinking Question</h4>
+            <div className="quiz-question-content">
+              {quiz_question}
             </div>
           </div>
         )}

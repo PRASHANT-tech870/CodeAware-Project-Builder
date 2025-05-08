@@ -107,6 +107,27 @@
   border: 1px solid #e9ecef;
 }
 
+.step-quiz-question {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: #f0f9ff;
+  border-radius: 8px;
+  border-left: 3px solid #3498db;
+}
+
+.step-quiz-question h4 {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.quiz-question-content {
+  color: #2c3e50;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
 .step-loading-indicator {
   display: flex;
   justify-content: center;
