@@ -315,18 +315,16 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         setProjectSteps(prev => [...prev, nextStepData]);
         setCurrentStep(prev => prev + 1);
         
-        // User story change: Don't pre-fill code - let users type it themselves
-        // We'll only set beginner starter code if it's the very first step (step 1)
+        // Only set starter code for absolute beginners on step 1
         if (currentStep === 0 && sessionData.expertiseLevel === 'beginner' && nextStepData.code) {
-          // Only for the first step, set starter code for beginners
           if (sessionData.projectType === 'html+css+js') {
-            if (nextStepData.code.includes('<html')) {
+            if (nextStepData.language === 'html') {
               setHtmlCode(nextStepData.code);
               setCurrentLanguage('html');
-            } else if (nextStepData.code.includes('style') && nextStepData.code.includes('{')) {
+            } else if (nextStepData.language === 'css') {
               setCssCode(nextStepData.code);
               setCurrentLanguage('css');
-            } else {
+            } else if (nextStepData.language === 'javascript') {
               setJsCode(nextStepData.code);
               setCurrentLanguage('javascript');
             }
@@ -585,4 +583,4 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
   );
 };
 
-export default ProjectBuilder; 
+export default ProjectBuilder;
