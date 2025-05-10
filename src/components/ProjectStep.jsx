@@ -18,11 +18,17 @@ const ProjectStep = ({ stepData, stepNumber }) => {
   
   const { title, description, code, expected_outcome, feedback, quiz_question } = stepData;
   
+  // Ensure title has correct step number
+  const displayTitle = title || `Step ${stepNumber}`;
+  const formattedTitle = displayTitle.startsWith(`Step ${stepNumber}:`) ? 
+    displayTitle : 
+    `Step ${stepNumber}: ${displayTitle.replace(/^Step\s+\d+:\s*/, '')}`;
+  
   return (
     <div className="project-step">
       <div className="step-number">{stepNumber}</div>
       <div className="step-content">
-        <h3 className="step-title">{title || `Step ${stepNumber}`}</h3>
+        <h3 className="step-title">{formattedTitle}</h3>
         
         {feedback && (
           <div className="step-feedback">

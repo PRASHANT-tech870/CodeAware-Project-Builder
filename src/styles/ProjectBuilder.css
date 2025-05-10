@@ -509,4 +509,102 @@
 .score-value {
   font-size: 18px;
   color: #2c3e50;
+}
+
+.quote-container {
+  margin-top: 20px;
+  padding: 15px;
+  border-left: 3px solid #3498db;
+  background-color: #f8f9fa;
+  border-radius: 0 4px 4px 0;
+}
+
+.quote-container blockquote {
+  margin: 0;
+  font-style: italic;
+  color: #555;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.progress-indicator {
+  margin-left: 8px;
+  background-color: #3498db;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Project completion styling */
+.project-completed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.completion-message {
+  max-width: 800px;
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.completion-message h2 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.completion-message p {
+  color: #34495e;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.completion-details {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+
+.completion-details h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.completion-details p {
+  color: #34495e;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.new-project-button {
+  padding: 0.8rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+
+.new-project-button:hover {
+  background-color: #2980b9;
 } 

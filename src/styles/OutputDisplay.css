@@ -2,10 +2,150 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: white;
-  border-radius: 4px;
+  width: 100%;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: #f5f5f5;
+}
+
+.output-tabs {
+  display: flex;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+  padding: 8px 15px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.tab-button.active {
+  background-color: white;
+  border-bottom: 2px solid #3498db;
+  color: #3498db;
+}
+
+.tab-button:hover:not(.active) {
+  background-color: #e8e8e8;
+}
+
+.tab-content {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  background-color: white;
+  height: calc(100% - 37px);
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-output {
+  color: #e74c3c;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: #ffeaea;
+}
+
+.error-output pre {
+  white-space: pre-wrap;
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.code-output {
+  padding: 10px;
+}
+
+.stdout, .stderr {
+  margin-bottom: 15px;
+}
+
+.stdout h3, .stderr h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.stdout {
+  color: #333;
+}
+
+.stderr {
+  color: #c0392b;
+}
+
+.stdout pre, .stderr pre {
+  background-color: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.info-message {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #777;
+  font-style: italic;
+}
+
+.html-preview {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: white;
+}
+
+.streamlit-preview {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.streamlit-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: white;
 }
 
 .output-header {
@@ -46,20 +186,6 @@
   color: #e74c3c;
 }
 
-.stdout pre, .stderr pre {
-  background-color: #f8f9fa;
-  padding: 12px;
-  border-radius: 4px;
-  margin: 0;
-  overflow-x: auto;
-  white-space: pre-wrap;
-}
-
-.stderr pre {
-  background-color: #fff5f5;
-  color: #e74c3c;
-}
-
 .exit-code {
   font-size: 0.85rem;
   color: #7f8c8d;
@@ -76,29 +202,6 @@
   font-weight: bold;
 }
 
-.loading-output {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #7f8c8d;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
-  border-radius: 50%;
-  border-top-color: #3498db;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 .empty-output {
   display: flex;
   align-items: center;
@@ -106,46 +209,6 @@
   height: 100%;
   color: #7f8c8d;
   font-style: italic;
-}
-
-.error-output {
-  padding: 16px;
-  background-color: #fff5f5;
-  border-radius: 4px;
-  color: #e74c3c;
-}
-
-.error-output h4 {
-  margin-top: 0;
-  margin-bottom: 8px;
-}
-
-.error-output pre {
-  margin: 0;
-  white-space: pre-wrap;
-  overflow-x: auto;
-}
-
-.html-preview {
-  flex: 1;
-  overflow: hidden;
-}
-
-.html-preview iframe {
-  border: none;
-}
-
-/* Streamlit-specific styles */
-.streamlit-iframe-container {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.streamlit-iframe {
-  border: none;
-  flex: 1;
 }
 
 .streamlit-url {
@@ -160,12 +223,6 @@
 
 .streamlit-url a:hover {
   text-decoration: underline;
-}
-
-.streamlit-output {
-  flex: 1;
-  padding: 0;
-  overflow: auto;
 }
 
 .streamlit-message {

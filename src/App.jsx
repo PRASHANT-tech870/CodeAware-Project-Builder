@@ -9,7 +9,7 @@ function App() {
   const handleProjectStart = (sessionData) => {
     setProjectSession(sessionData)
   }
-
+  
   const handleReset = () => {
     setProjectSession(null)
   }

@@ -36,10 +36,12 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     if (sessionData && sessionData.geminiResponse) {
       try {
         const responseObject = JSON.parse(sessionData.geminiResponse);
+        console.log("Initial project data:", responseObject);
+        
         setProjectDetails({
           title: responseObject.project_title,
           description: responseObject.project_description,
-          totalSteps: responseObject.total_steps
+          totalSteps: responseObject.total_steps || 8 // Fallback to 8 if not specified
         });
         
         if (responseObject.steps && responseObject.steps.length > 0) {
@@ -188,12 +190,15 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     
     try {
       // Get quiz questions for this step
+      console.log("Getting quiz questions for step:", currentStep);
       const response = await axios.post('http://localhost:8000/get_step_questions', {
         session_id: sessionData.sessionId,
         step_number: currentStep
       });
       
-      if (response.data && response.data.questions) {
+      console.log("Quiz questions response:", response.data);
+      
+      if (response.data && response.data.questions && response.data.questions.length > 0) {
         setQuizQuestions(response.data.questions);
         
         // Initialize answer state for each question
@@ -203,12 +208,23 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         });
         setUserAnswers(initialAnswers);
       } else {
-        setError('Failed to load quiz questions');
+        // If no questions are returned, show an error
+        console.error('No quiz questions returned from API');
+        setError('Failed to load quiz questions - no questions returned');
+        
+        // Hide quiz after a delay to allow user to see the error
+        setTimeout(() => {
+          setShowQuiz(false);
+        }, 3000);
       }
     } catch (err) {
       console.error('Error fetching quiz questions:', err);
-      setError('Failed to load quiz questions. Please try again.');
-      setShowQuiz(false);
+      setError(`Failed to load quiz questions. Please try again. ${err.response?.data?.detail || ''}`);
+      
+      // Hide quiz after a delay
+      setTimeout(() => {
+        setShowQuiz(false);
+      }, 3000);
     } finally {
       setLoadingQuestions(false);
     }
@@ -271,6 +287,13 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     // Clean up any running Streamlit process
     await cleanupStreamlit();
     
+    // Check if we're already on the last step
+    if (currentStep + 1 >= (projectDetails.totalSteps || 8)) {
+      setProjectCompleted(true);
+      setCompletionMessage("Congratulations! You have completed the project.");
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     
@@ -313,10 +336,16 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         
         // Add the new step to our steps array
         setProjectSteps(prev => [...prev, nextStepData]);
-        setCurrentStep(prev => prev + 1);
+        
+        // Ensure we never exceed total steps
+        const nextStepNumber = currentStep + 1;
+        setCurrentStep(nextStepNumber);
         
         // Only set starter code for absolute beginners on step 1
-        if (currentStep === 0 && sessionData.expertiseLevel === 'beginner' && nextStepData.code) {
+        const isFirstStep = currentStep === 0;
+        const isBeginner = sessionData.expertiseLevel === 'beginner';
+        
+        if (isFirstStep && isBeginner && nextStepData.code) {
           if (sessionData.projectType === 'html+css+js') {
             if (nextStepData.language === 'html') {
               setHtmlCode(nextStepData.code);
@@ -375,7 +404,31 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     }
   };
 
+  // Make sure the progress indicator doesn't exceed 100%
+  const calculateProgress = () => {
+    const total = projectDetails.totalSteps || 1;
+    const current = currentStep + 1;
+    const percentage = Math.min(Math.round((current / total) * 100), 100);
+    return percentage;
+  };
+
   if (projectCompleted) {
+    const inspirationalQuotes = [
+      "Every great developer you know got there by solving problems they were unqualified to solve until they actually did it.",
+      "The best way to predict the future is to invent it.",
+      "Good code is its own best documentation.",
+      "Programming isn't about what you know; it's about what you can figure out.",
+      "First, solve the problem. Then, write the code.",
+      "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
+      "The most disastrous thing that you can ever learn is your first programming language.",
+      "It's not a bug; it's an undocumented feature!",
+      "The only way to learn a new programming language is by writing programs in it.",
+      "Code is like humor. When you have to explain it, it's bad."
+    ];
+    
+    // Select a random quote
+    const randomQuote = inspirationalQuotes[Math.floor(Math.random() * inspirationalQuotes.length)];
+    
     return (
       <div className="project-builder">
         <div className="project-header">
@@ -397,6 +450,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
               <p>You've successfully completed all {projectDetails.totalSteps} steps of this project.</p>
               <p>Technology stack: {sessionData.projectType}</p>
               <p>Expertise level: {sessionData.expertiseLevel}</p>
+              <div className="quote-container">
+                <blockquote>{randomQuote}</blockquote>
+              </div>
             </div>
             <button className="new-project-button" onClick={onReset}>
               Start a New Project
@@ -418,6 +474,11 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
             <span className="expertise">Level: {sessionData.expertiseLevel}</span>
             <span className="step-counter">
               Step {currentStep + 1} of {projectDetails.totalSteps || '?'}
+              {projectDetails.totalSteps > 0 && (
+                <span className="progress-indicator">
+                  {calculateProgress()}% complete
+                </span>
+              )}
             </span>
           </div>
         </div>
