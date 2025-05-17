@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import Split from 'react-split';
 import CodeEditor from './CodeEditor';
 import OutputDisplay from './OutputDisplay';
 import ProjectStep from './ProjectStep';
@@ -30,6 +34,44 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
   const [completionMessage, setCompletionMessage] = useState('');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [streamlitExecutionId, setStreamlitExecutionId] = useState(null);
+
+  // Custom renderer components for ReactMarkdown
+  const markdownComponents = {
+    // Add the markdown-content class to the root div
+    root: ({ node, ...props }) => <div className="markdown-content" {...props} />,
+    code({node, inline, className, children, ...props}) {
+      const match = /language-(\w+)/.exec(className || '');
+      const language = match ? match[1] : 'text';
+      return !inline ? (
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={language}
+          PreTag="div"
+          wrapLines={true}
+          {...props}
+        >
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    }
+  };
+
+  // Special components for quiz options (no wrapper div to avoid nesting issues in labels)
+  const optionComponents = {
+    // Don't add a wrapper div for options, as they're inside labels
+    p: ({node, ...props}) => <span {...props} />,
+    code({node, inline, className, children, ...props}) {
+      return (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    }
+  };
 
   useEffect(() => {
     // Parse the initial Gemini response when component mounts
@@ -146,7 +188,8 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         // For HTML/CSS/JS, handle preview
         const response = await axios.post('http://localhost:8000/render_website', {
           html_code: htmlCode,
-          css_code: cssCode
+          css_code: cssCode,
+          session_id: sessionData.sessionId  // Pass session ID to track execution attempts
         });
 
         setExecutionResult({
@@ -161,7 +204,8 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         // For Python, send to backend for execution
         const response = await axios.post('http://localhost:8000/execute', {
           code,
-          language
+          language,
+          session_id: sessionData.sessionId  // Pass session ID to track execution attempts
         });
 
         // If this is a Streamlit app, keep track of the execution ID
@@ -464,12 +508,16 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     setAskingQuestion(true);
     setError(null);
     
+    // Determine if the question is related to an error
+    const isErrorRelated = detectErrorQuestion(userQuestion);
+    
     try {
       const response = await axios.post('http://localhost:8000/ask_question', {
         question: userQuestion,
         code: getCurrentCode(),
         project_type: sessionData.projectType,
-        session_id: sessionData.sessionId
+        session_id: sessionData.sessionId,
+        is_error_related: isErrorRelated
       });
       
       setAiResponse(response.data.response);
@@ -482,6 +530,22 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     } finally {
       setAskingQuestion(false);
     }
+  };
+  
+  // Helper function to detect if a question is error-related
+  const detectErrorQuestion = (question) => {
+    // Common error-related keywords and phrases
+    const errorKeywords = [
+      'error', 'bug', 'issue', 'problem', 'wrong', 'fail', 'doesn\'t work', 
+      'does not work', 'broken', 'fix', 'debug', 'exception', 'traceback', 
+      'TypeError', 'SyntaxError', 'ValueError', 'IndexError', 'KeyError',
+      'not working', 'undefined', 'null', 'NaN', 'Uncaught', 'crash'
+    ];
+    
+    const questionLower = question.toLowerCase();
+    
+    // Check if any error keywords are present in the question
+    return errorKeywords.some(keyword => questionLower.includes(keyword.toLowerCase()));
   };
 
   // Make sure the progress indicator doesn't exceed 100%
@@ -567,7 +631,17 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         </button>
       </div>
 
-      <div className="project-content">
+      <Split 
+        className="project-content" 
+        sizes={[30, 70]} 
+        minSize={[200, 400]}
+        gutterSize={8}
+        gutterAlign="center"
+        snapOffset={50}
+        direction="horizontal"
+        cursor="col-resize"
+        dragInterval={1}
+      >
         <div className="guidance-panel">
           <ProjectStep 
             stepData={projectSteps[currentStep]} 
@@ -577,7 +651,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
           {showQuiz ? (
             <div className="quiz-section">
               <h3>Before proceeding to the next step...</h3>
-              <p>Please answer these questions about what you've learned:</p>
+              <p><ReactMarkdown components={markdownComponents}>Please answer these questions about what you've learned:</ReactMarkdown></p>
               
               {loadingQuestions ? (
                 <div className="loading-quiz">Loading questions...</div>
@@ -585,7 +659,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                 <form onSubmit={handleSubmitQuiz} className="quiz-form">
                   {quizQuestions.map((question, index) => (
                     <div key={question.question_id} className="quiz-question">
-                      <p className="question-text"><strong>Question {index + 1}:</strong> {question.question_text}</p>
+                      <p className="question-text"><strong>Question {index + 1}:</strong> <ReactMarkdown components={markdownComponents}>{question.question_text}</ReactMarkdown></p>
                       <div className="question-options">
                         {question.options.map((option, optIndex) => (
                           <div key={optIndex} className="option-container">
@@ -598,7 +672,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                               onChange={() => handleAnswerSelect(question.question_id, option)}
                               disabled={verifyingQuiz}
                             />
-                            <label htmlFor={`${question.question_id}-${optIndex}`}>{option}</label>
+                            <label htmlFor={`${question.question_id}-${optIndex}`}><ReactMarkdown components={optionComponents}>{option}</ReactMarkdown></label>
                           </div>
                         ))}
                       </div>
@@ -609,7 +683,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                             ? 'correct' 
                             : 'incorrect'
                         }`}>
-                          {quizResult.question_feedback.find(f => f.question_id === question.question_id)?.feedback}
+                          <ReactMarkdown components={markdownComponents}>{quizResult.question_feedback.find(f => f.question_id === question.question_id)?.feedback}</ReactMarkdown>
                         </div>
                       )}
                     </div>
@@ -637,7 +711,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                   {quizResult && (
                     <div className={`quiz-result ${quizResult.correct ? 'correct' : 'incorrect'}`}>
                       <h4>{quizResult.correct ? '✅ Great work!' : '❌ Some answers were incorrect'}</h4>
-                      <p>{quizResult.feedback}</p>
+                      <p><ReactMarkdown components={markdownComponents}>{quizResult.feedback}</ReactMarkdown></p>
                       {quizResult.score && (
                         <div className="score-display">
                           Score: <span className="score-value">{quizResult.score}/100</span>
@@ -662,6 +736,13 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
           
           <div className="question-section">
             <h3>Have a question?</h3>
+            <p className="question-hint">
+              Ask for explanations about concepts or help with errors. 
+              {sessionData.projectType === 'html+css+js' 
+                ? 'For HTML, CSS, or JavaScript issues' 
+                : 'For Python or Streamlit issues'}, 
+              the AI will provide progressive hints before showing complete solutions.
+            </p>
             <form onSubmit={handleAskQuestion} className="question-form">
               <input
                 type="text"
@@ -682,7 +763,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
               <div className="ai-answer">
                 <h4>AI Response:</h4>
                 <div className="answer-content">
-                  {aiResponse}
+                  <ReactMarkdown components={markdownComponents}>
+                    {aiResponse}
+                  </ReactMarkdown>
                 </div>
               </div>
             )}
@@ -690,34 +773,46 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         </div>
         
         <div className="coding-panel">
-          <div className="editor-container">
-            <CodeEditor 
-              onCodeSubmit={handleCodeSubmit} 
-              onCodeChange={handleCodeChange} 
-              isLoading={isLoading}
-              initialLanguage={
-                sessionData.projectType === 'html+css+js' ? 'html' : 'python'
-              }
-              projectType={sessionData.projectType}
-              currentCode={{
-                html: htmlCode,
-                css: cssCode,
-                javascript: jsCode,
-                python: pythonCode
-              }}
-            />
-          </div>
-          
-          <div className="output-container">
-            <OutputDisplay 
-              executionResult={executionResult} 
-              isLoading={isLoading}
-              error={error}
-              combinedHtml={combinedHtml}
-            />
-          </div>
+          <Split
+            className="coding-split"
+            sizes={[50, 50]}
+            minSize={150}
+            direction="vertical"
+            gutterSize={8}
+            gutterAlign="center"
+            snapOffset={50}
+            cursor="row-resize"
+            dragInterval={1}
+          >
+            <div className="editor-container">
+              <CodeEditor 
+                onCodeSubmit={handleCodeSubmit} 
+                onCodeChange={handleCodeChange} 
+                isLoading={isLoading}
+                initialLanguage={
+                  sessionData.projectType === 'html+css+js' ? 'html' : 'python'
+                }
+                projectType={sessionData.projectType}
+                currentCode={{
+                  html: htmlCode,
+                  css: cssCode,
+                  javascript: jsCode,
+                  python: pythonCode
+                }}
+              />
+            </div>
+            
+            <div className="output-container">
+              <OutputDisplay 
+                executionResult={executionResult} 
+                isLoading={isLoading}
+                error={error}
+                combinedHtml={combinedHtml}
+              />
+            </div>
+          </Split>
         </div>
-      </div>
+      </Split>
       
       {error && <div className="error-message">{error}</div>}
     </div>

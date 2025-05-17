@@ -46,37 +46,57 @@ const WelcomeScreen = ({ onProjectStart }) => {
   };
 
   return (
-    <div className="welcome-container">
-      <div className="welcome-content">
-        <h1>Welcome to AI-Guided Project Builder</h1>
-        <p className="welcome-desc">
-          Build real-world projects with step-by-step AI guidance. Choose your tech stack, 
-          specify your expertise level, and let's start coding!
-        </p>
+    <div className="welcome-screen">
+      <div className="welcome-container">
+        <div className="welcome-header">
+          <h1>Welcome to AI-Guided Project Builder</h1>
+          <p>
+            Build real-world projects with step-by-step AI guidance. Choose your tech stack, 
+            specify your expertise level, and let's start coding!
+          </p>
+        </div>
         
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
         
-        <form onSubmit={handleSubmit} className="project-form">
+        <form onSubmit={handleSubmit}>
           <div className="form-section">
             <h2>What would you like to build?</h2>
             
-            <div className="option-cards">
-              <div 
-                className={`option-card ${projectType === 'python+streamlit' ? 'selected' : ''}`}
-                onClick={() => setProjectType('python+streamlit')}
-              >
-                <div className="card-icon">🐍</div>
-                <h3>Python + Streamlit</h3>
-                <p>Build data-focused web applications with Python</p>
+            <div className="tech-choices">
+              <div className="tech-choice">
+                <input 
+                  type="radio" 
+                  id="python-streamlit" 
+                  name="projectType" 
+                  value="python+streamlit"
+                  checked={projectType === 'python+streamlit'}
+                  onChange={() => setProjectType('python+streamlit')}
+                />
+                <label htmlFor="python-streamlit">
+                  <div className="tech-icon">🐍</div>
+                  <div className="tech-name">Python + Streamlit</div>
+                  <div className="tech-desc">Build data-focused web applications with Python</div>
+                </label>
               </div>
               
-              <div 
-                className={`option-card ${projectType === 'html+css+js' ? 'selected' : ''}`}
-                onClick={() => setProjectType('html+css+js')}
-              >
-                <div className="card-icon">🌐</div>
-                <h3>HTML + CSS + JS</h3>
-                <p>Create interactive websites with web technologies</p>
+              <div className="tech-choice">
+                <input 
+                  type="radio" 
+                  id="html-css-js" 
+                  name="projectType" 
+                  value="html+css+js"
+                  checked={projectType === 'html+css+js'}
+                  onChange={() => setProjectType('html+css+js')}
+                />
+                <label htmlFor="html-css-js">
+                  <div className="tech-icon">🌐</div>
+                  <div className="tech-name">HTML + CSS + JS</div>
+                  <div className="tech-desc">Create interactive websites with web technologies</div>
+                </label>
               </div>
             </div>
           </div>
@@ -84,55 +104,66 @@ const WelcomeScreen = ({ onProjectStart }) => {
           <div className="form-section">
             <h2>What's your expertise level?</h2>
             
-            <div className="expertise-options">
-              <label className={expertiseLevel === 'beginner' ? 'selected' : ''}>
+            <div className="skill-levels">
+              <div className="skill-level">
                 <input 
                   type="radio" 
+                  id="beginner" 
                   name="expertiseLevel" 
                   value="beginner"
                   checked={expertiseLevel === 'beginner'}
                   onChange={() => setExpertiseLevel('beginner')}
                 />
-                <span>Beginner</span>
-                <p>I'm new to this technology</p>
-              </label>
+                <label htmlFor="beginner">
+                  <div className="skill-name">Beginner</div>
+                  <p>I'm new to this technology</p>
+                </label>
+              </div>
               
-              <label className={expertiseLevel === 'intermediate' ? 'selected' : ''}>
+              <div className="skill-level">
                 <input 
                   type="radio" 
+                  id="intermediate" 
                   name="expertiseLevel" 
                   value="intermediate"
                   checked={expertiseLevel === 'intermediate'}
                   onChange={() => setExpertiseLevel('intermediate')}
                 />
-                <span>Intermediate</span>
-                <p>I've built some small projects</p>
-              </label>
+                <label htmlFor="intermediate">
+                  <div className="skill-name">Intermediate</div>
+                  <p>I've built some small projects</p>
+                </label>
+              </div>
               
-              <label className={expertiseLevel === 'expert' ? 'selected' : ''}>
+              <div className="skill-level">
                 <input 
                   type="radio" 
+                  id="expert" 
                   name="expertiseLevel" 
                   value="expert"
                   checked={expertiseLevel === 'expert'}
                   onChange={() => setExpertiseLevel('expert')}
                 />
-                <span>Expert</span>
-                <p>I'm comfortable with advanced concepts</p>
-              </label>
+                <label htmlFor="expert">
+                  <div className="skill-name">Expert</div>
+                  <p>I'm comfortable with advanced concepts</p>
+                </label>
+              </div>
             </div>
           </div>
           
           <div className="form-section">
             <h2>What would you like to build? (Optional)</h2>
-            <p className="input-desc">Describe your project idea, or leave blank for AI suggestions</p>
             
-            <textarea
-              placeholder="E.g., A todo app with authentication, A weather dashboard, etc."
-              value={projectIdea}
-              onChange={(e) => setProjectIdea(e.target.value)}
-              rows="3"
-            />
+            <div className="form-group">
+              <label>Describe your project idea, or leave blank for AI suggestions</label>
+              <textarea
+                placeholder="E.g., A todo app with authentication, A weather dashboard, etc."
+                value={projectIdea}
+                onChange={(e) => setProjectIdea(e.target.value)}
+                rows="3"
+              />
+            </div>
           </div>
           
           <button 
@@ -140,7 +171,14 @@ const WelcomeScreen = ({ onProjectStart }) => {
             className="start-button"
             disabled={isLoading}
           >
-            {isLoading ? 'Creating your project...' : 'Start Building'}
+            {isLoading ? (
+              <>
+                <span className="loading-spinner"></span>
+                <span className="button-text">Creating your project...</span>
+              </>
+            ) : (
+              <span className="button-text">Start Building</span>
+            )}
           </button>
         </form>
       </div>

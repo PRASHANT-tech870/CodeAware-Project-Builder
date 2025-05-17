@@ -1,4 +1,7 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import '../styles/ProjectStep.css';
 
 const ProjectStep = ({ stepData, stepNumber }) => {
@@ -23,6 +26,31 @@ const ProjectStep = ({ stepData, stepNumber }) => {
   const formattedTitle = displayTitle.startsWith(`Step ${stepNumber}:`) ? 
     displayTitle : 
     `Step ${stepNumber}: ${displayTitle.replace(/^Step\s+\d+:\s*/, '')}`;
+
+  // Custom renderer components for ReactMarkdown
+  const components = {
+    // Add the markdown-content class to the root div
+    root: ({ node, ...props }) => <div className="markdown-content" {...props} />,
+    code({node, inline, className, children, ...props}) {
+      const match = /language-(\w+)/.exec(className || '');
+      const language = match ? match[1] : 'text';
+      return !inline ? (
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={language}
+          PreTag="div"
+          wrapLines={true}
+          {...props}
+        >
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    }
+  };
   
   return (
     <div className="project-step">
@@ -34,13 +62,17 @@ const ProjectStep = ({ stepData, stepNumber }) => {
           <div className="step-feedback">
             <h4>Feedback on Your Code</h4>
             <div className="feedback-content">
-              {feedback}
+              <ReactMarkdown components={components}>
+                {feedback}
+              </ReactMarkdown>
             </div>
           </div>
         )}
         
         <div className="step-description">
-          {description}
+          <ReactMarkdown components={components}>
+            {description}
+          </ReactMarkdown>
         </div>
         
         {code && (
@@ -56,7 +88,9 @@ const ProjectStep = ({ stepData, stepNumber }) => {
           <div className="step-expected">
             <h4>Expected Outcome</h4>
             <div className="expected-content">
-              {expected_outcome}
+              <ReactMarkdown components={components}>
+                {expected_outcome}
+              </ReactMarkdown>
             </div>
           </div>
         )}
@@ -65,7 +99,9 @@ const ProjectStep = ({ stepData, stepNumber }) => {
           <div className="step-quiz-question">
             <h4>Thinking Question</h4>
             <div className="quiz-question-content">
-              {quiz_question}
+              <ReactMarkdown components={components}>
+                {quiz_question}
+              </ReactMarkdown>
             </div>
           </div>
         )}
