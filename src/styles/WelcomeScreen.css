@@ -78,6 +78,38 @@
   position: relative;
 }
 
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.algorithm-designer-button {
+  background-color: transparent;
+  color: #3f51b5;
+  border: 2px solid #3f51b5;
+  border-radius: var(--radius-full);
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.algorithm-designer-button:hover {
+  background-color: #3f51b5;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(63, 81, 181, 0.2);
+}
+
+.algorithm-designer-button .icon {
+  font-size: 1.2rem;
+}
+
 .app-logo {
   font-size: 2.8rem;
   font-weight: 800;
@@ -87,6 +119,38 @@
   background-clip: text;
   color: transparent;
   margin-bottom: 5px;
+}
+
+.algorithm-prompt {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--neutral-600);
+  line-height: 1.5;
+}
+
+.algorithm-tip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.open-algorithm-btn {
+  background: none;
+  color: #3f51b5;
+  border: 1px solid #3f51b5;
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.8rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.open-algorithm-btn:hover {
+  background-color: #3f51b5;
+  color: white;
 }
 
 .tagline {
@@ -443,6 +507,11 @@
   
   .app-logo {
     font-size: 2.2rem;
+  }
+  
+  .algorithm-tip {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 

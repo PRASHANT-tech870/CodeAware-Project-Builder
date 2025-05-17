@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/WelcomeScreen.css';
+import AlgorithmDesigner from './AlgorithmDesigner';
 
 const WelcomeScreen = ({ onProjectStart }) => {
   const [projectType, setProjectType] = useState('');
@@ -9,6 +10,7 @@ const WelcomeScreen = ({ onProjectStart }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [animatedText, setAnimatedText] = useState('');
+  const [showAlgorithmDesigner, setShowAlgorithmDesigner] = useState(false);
 
   // Text typing animation effect
   const targetText = "Build, Learn, Code.";
@@ -79,6 +81,15 @@ const WelcomeScreen = ({ onProjectStart }) => {
         <div className="logo-section">
           <div className="app-logo">EduAIthon</div>
           <div className="tagline">AI-Powered Coding Education</div>
+          <div className="action-buttons">
+            <button 
+              className="algorithm-designer-button" 
+              onClick={() => setShowAlgorithmDesigner(true)}
+            >
+              <span className="icon">🧩</span>
+              Design Algorithm First
+            </button>
+          </div>
         </div>
         
         <div className="welcome-header">
@@ -199,6 +210,19 @@ const WelcomeScreen = ({ onProjectStart }) => {
                 onChange={(e) => setProjectIdea(e.target.value)}
                 rows="3"
               />
+              
+              <div className="algorithm-prompt">
+                <span className="algorithm-tip">
+                  💡 Need help planning your project logic first?
+                  <button 
+                    type="button" 
+                    className="open-algorithm-btn"
+                    onClick={() => setShowAlgorithmDesigner(true)}
+                  >
+                    Design Algorithm
+                  </button>
+                </span>
+              </div>
             </div>
           </div>
           
@@ -234,8 +258,17 @@ const WelcomeScreen = ({ onProjectStart }) => {
             <div className="feature-title">Progressive Projects</div>
             <p>Build complexity as you learn at your own pace</p>
           </div>
+          <div className="feature">
+            <div className="feature-icon">🧩</div>
+            <div className="feature-title">Algorithm Designer</div>
+            <p>Plan your project logic before writing code</p>
+          </div>
         </div>
       </div>
+
+      {showAlgorithmDesigner && (
+        <AlgorithmDesigner onClose={() => setShowAlgorithmDesigner(false)} />
+      )}
     </div>
   );
 };
