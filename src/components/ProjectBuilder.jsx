@@ -34,6 +34,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
   const [completionMessage, setCompletionMessage] = useState('');
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [streamlitExecutionId, setStreamlitExecutionId] = useState(null);
+  const [currentStepAttempts, setCurrentStepAttempts] = useState(0);
 
   // Custom renderer components for ReactMarkdown
   const markdownComponents = {
@@ -89,6 +90,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         if (responseObject.steps && responseObject.steps.length > 0) {
           setProjectSteps(responseObject.steps);
         }
+        
+        // Initialize step attempts
+        setCurrentStepAttempts(0);
       } catch (err) {
         console.error('Error parsing Gemini response:', err);
         setError('There was an issue setting up your project. Please try again.');
@@ -192,6 +196,10 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
           session_id: sessionData.sessionId  // Pass session ID to track execution attempts
         });
 
+        // Update attempt count after successful execution
+        const updatedAttempts = currentStepAttempts + 1;
+        setCurrentStepAttempts(updatedAttempts);
+        
         setExecutionResult({
           code,
           ...(language === 'html' ? { html_content: code } : 
@@ -208,6 +216,10 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
           session_id: sessionData.sessionId  // Pass session ID to track execution attempts
         });
 
+        // Update attempt count after successful execution  
+        const updatedAttempts = currentStepAttempts + 1;
+        setCurrentStepAttempts(updatedAttempts);
+        
         // If this is a Streamlit app, keep track of the execution ID
         if (response.data.is_streamlit && !response.data.streamlit_error) {
           setStreamlitExecutionId(response.data.execution_id);
@@ -376,6 +388,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                 const nextStepNumber = currentStep + 1;
                 setCurrentStep(nextStepNumber);
                 
+                // Reset attempts for the new step
+                setCurrentStepAttempts(0);
+                
                 // CRITICAL: Always preserve existing code - DO NOT UPDATE code here
                 // Code from previous steps should be retained
               } catch (err) {
@@ -461,6 +476,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         const nextStepNumber = currentStep + 1;
         setCurrentStep(nextStepNumber);
         
+        // Reset attempts for the new step
+        setCurrentStepAttempts(0);
+        
         // IMPORTANT: Only set starter code for absolute beginners on step 1 (the very first step)
         // For all other steps, retain the existing code
         const isVeryFirstStep = currentStep === 0;
@@ -539,7 +557,10 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
       'error', 'bug', 'issue', 'problem', 'wrong', 'fail', 'doesn\'t work', 
       'does not work', 'broken', 'fix', 'debug', 'exception', 'traceback', 
       'TypeError', 'SyntaxError', 'ValueError', 'IndexError', 'KeyError',
-      'not working', 'undefined', 'null', 'NaN', 'Uncaught', 'crash'
+      'not working', 'undefined', 'null', 'NaN', 'Uncaught', 'crash',
+      'why isn\'t', 'why is not', 'help me fix', 'what\'s wrong', 'what is wrong',
+      'incorrect', 'failing', 'can\'t get it to', 'cannot get it to',
+      'stuck', 'trouble', 'struggling'
     ];
     
     const questionLower = question.toLowerCase();
@@ -555,6 +576,32 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
     const percentage = Math.min(Math.round((current / total) * 100), 100);
     return percentage;
   };
+
+  // Get execution attempts when the current step changes
+  useEffect(() => {
+    if (sessionData && sessionData.sessionId && currentStep >= 0) {
+      // Fetch current step attempts from the backend
+      const fetchStepAttempts = async () => {
+        try {
+          const response = await axios.get(`http://localhost:8000/get_step_attempts`, {
+            params: {
+              session_id: sessionData.sessionId,
+              step_number: currentStep
+            }
+          });
+          
+          if (response.data && response.data.attempts !== undefined) {
+            setCurrentStepAttempts(response.data.attempts);
+          }
+        } catch (error) {
+          console.error("Error fetching step attempts:", error);
+          // Don't set an error for the user - this is a background task
+        }
+      };
+      
+      fetchStepAttempts();
+    }
+  }, [currentStep, sessionData]);
 
   if (projectCompleted) {
     const inspirationalQuotes = [
@@ -646,6 +693,7 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
           <ProjectStep 
             stepData={projectSteps[currentStep]} 
             stepNumber={currentStep + 1}
+            executionAttempts={currentStepAttempts}
           />
           
           {showQuiz ? (
@@ -742,6 +790,10 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
                 ? 'For HTML, CSS, or JavaScript issues' 
                 : 'For Python or Streamlit issues'}, 
               the AI will provide progressive hints before showing complete solutions.
+              <span className="hint-info">
+                <i className="hint-icon">ℹ️</i> For error-related questions, you'll receive helpful hints for your first 3 attempts.
+                Complete solutions will be provided after 4 attempts on the same step.
+              </span>
             </p>
             <form onSubmit={handleAskQuestion} className="question-form">
               <input

@@ -688,6 +688,19 @@
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
+.hint-info {
+  display: block;
+  margin-top: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: 1px dashed rgba(76, 201, 240, 0.3);
+  font-style: italic;
+}
+
+.hint-icon {
+  font-style: normal;
+  margin-right: 4px;
+}
+
 .question-form {
   display: flex;
   gap: 0.5rem;
