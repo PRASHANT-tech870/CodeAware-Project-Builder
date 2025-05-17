@@ -55,10 +55,21 @@
 
 .step-description {
   margin-bottom: 1.5rem;
+  line-height: 1.6;
   color: #2c3e50;
   font-size: 0.95rem;
-  line-height: 1.6;
-  white-space: pre-wrap;
+}
+
+.step-description::after {
+  content: "👉 Add the code for this step in the editor to the right";
+  display: block;
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f0f9ff;
+  border-left: 3px solid #3498db;
+  color: #2980b9;
+  font-weight: 500;
+  border-radius: 0 4px 4px 0;
 }
 
 .step-code-example {

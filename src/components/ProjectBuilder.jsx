@@ -183,6 +183,13 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
   };
 
   const handleCompleteStep = async () => {
+    // Check if there's any code in the editor for the current step
+    const currentCode = getCurrentCode();
+    if (!currentCode || currentCode.trim() === '') {
+      setError('Please write some code for this step before proceeding.');
+      return;
+    }
+    
     // Show the quiz when the user wants to complete a step
     setShowQuiz(true);
     setLoadingQuestions(true);
@@ -268,11 +275,80 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
       
       // If all answers correct, proceed to next step after a delay
       if (response.data.correct) {
+        // Store current code before proceeding to next step
+        const currentEditorCode = getCurrentCode();
+        const currentEditorLanguage = currentLanguage;
+        
         setTimeout(() => {
-          handleNextStep();
+          // First hide the quiz
           setShowQuiz(false);
           setUserAnswers({});
           setQuizResult(null);
+          
+          // Now proceed to next step, but we'll use a customized version that doesn't modify code
+          // Clean up any running Streamlit process
+          cleanupStreamlit().then(() => {
+            // Check if we're already on the last step
+            if (currentStep + 1 >= (projectDetails.totalSteps || 8)) {
+              setProjectCompleted(true);
+              setCompletionMessage("Congratulations! You have completed the project.");
+              return;
+            }
+            
+            setIsLoading(true);
+            setError(null);
+            
+            // Proceed to next step without sending a special flag
+            axios.post('http://localhost:8000/next_step_test', {
+              project_type: sessionData.projectType,
+              expertise_level: sessionData.expertiseLevel,
+              project_idea: sessionData.projectIdea,
+              current_step: currentStep,
+              user_code: currentEditorCode,
+              session_id: sessionData.sessionId,
+              preserve_code: true // Special flag to ensure code isn't modified
+            }, {
+              headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+              console.log("Backend response:", response.data);
+              const { response: geminiResponse } = response.data;
+              
+              try {
+                const nextStepData = JSON.parse(geminiResponse);
+                console.log("Parsed step data:", nextStepData);
+                
+                // Check if the project is completed
+                if (nextStepData.project_completed) {
+                  setProjectCompleted(true);
+                  setCompletionMessage(nextStepData.message || "Congratulations! You have completed the project.");
+                  return;
+                }
+                
+                // Add the new step to our steps array
+                setProjectSteps(prev => [...prev, nextStepData]);
+                
+                // Ensure we never exceed total steps
+                const nextStepNumber = currentStep + 1;
+                setCurrentStep(nextStepNumber);
+                
+                // CRITICAL: Always preserve existing code - DO NOT UPDATE code here
+                // Code from previous steps should be retained
+              } catch (err) {
+                console.error('Error parsing step data:', err);
+                console.error('Raw response:', geminiResponse);
+                setError('There was an issue loading the next step. Please try again.');
+              }
+            })
+            .catch(err => {
+              console.error('Error fetching next step:', err);
+              console.error('Error details:', err.response?.data || err.message);
+              setError('Failed to load the next step. Please try again.');
+            })
+            .finally(() => {
+              setIsLoading(false);
+            });
+          });
         }, 2000);
       }
     } catch (err) {
@@ -341,11 +417,12 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
         const nextStepNumber = currentStep + 1;
         setCurrentStep(nextStepNumber);
         
-        // Only set starter code for absolute beginners on step 1
-        const isFirstStep = currentStep === 0;
+        // IMPORTANT: Only set starter code for absolute beginners on step 1 (the very first step)
+        // For all other steps, retain the existing code
+        const isVeryFirstStep = currentStep === 0;
         const isBeginner = sessionData.expertiseLevel === 'beginner';
         
-        if (isFirstStep && isBeginner && nextStepData.code) {
+        if (isVeryFirstStep && isBeginner && nextStepData.code) {
           if (sessionData.projectType === 'html+css+js') {
             if (nextStepData.language === 'html') {
               setHtmlCode(nextStepData.code);
@@ -362,6 +439,9 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
             setCurrentLanguage('python');
           }
         }
+        
+        // For non-beginners or any step after the first, we do not update the code
+        // This preserves the user's existing code between steps
       } catch (err) {
         console.error('Error parsing step data:', err);
         console.error('Raw response:', geminiResponse);
