@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/WelcomeScreen.css';
 
@@ -8,6 +8,33 @@ const WelcomeScreen = ({ onProjectStart }) => {
   const [projectIdea, setProjectIdea] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [animatedText, setAnimatedText] = useState('');
+
+  // Text typing animation effect
+  const targetText = "Build, Learn, Code.";
+  
+  useEffect(() => {
+    let currentIndex = 0;
+    let timerId;
+    
+    const typeNextChar = () => {
+      if (currentIndex <= targetText.length) {
+        setAnimatedText(targetText.slice(0, currentIndex));
+        currentIndex++;
+        timerId = setTimeout(typeNextChar, 100);
+      } else {
+        // Reset after a delay
+        setTimeout(() => {
+          currentIndex = 0;
+          timerId = setTimeout(typeNextChar, 100);
+        }, 3000);
+      }
+    };
+    
+    timerId = setTimeout(typeNextChar, 500);
+    
+    return () => clearTimeout(timerId);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,12 +74,19 @@ const WelcomeScreen = ({ onProjectStart }) => {
 
   return (
     <div className="welcome-screen">
+      <div className="animated-background"></div>
       <div className="welcome-container">
+        <div className="logo-section">
+          <div className="app-logo">EduAIthon</div>
+          <div className="tagline">AI-Powered Coding Education</div>
+        </div>
+        
         <div className="welcome-header">
-          <h1>Welcome to AI-Guided Project Builder</h1>
+          <h1>Build Real-World Projects with AI Guidance</h1>
+          <div className="animated-text">{animatedText}<span className="cursor">|</span></div>
           <p>
-            Build real-world projects with step-by-step AI guidance. Choose your tech stack, 
-            specify your expertise level, and let's start coding!
+            Choose your tech stack, specify your expertise level, and start building projects with 
+            step-by-step AI assistance tailored to your learning needs.
           </p>
         </div>
         
@@ -62,9 +96,9 @@ const WelcomeScreen = ({ onProjectStart }) => {
           </div>
         )}
         
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="project-form">
           <div className="form-section">
-            <h2>What would you like to build?</h2>
+            <h2>Choose Your Technology</h2>
             
             <div className="tech-choices">
               <div className="tech-choice">
@@ -102,7 +136,7 @@ const WelcomeScreen = ({ onProjectStart }) => {
           </div>
           
           <div className="form-section">
-            <h2>What's your expertise level?</h2>
+            <h2>Your Experience Level</h2>
             
             <div className="skill-levels">
               <div className="skill-level">
@@ -115,7 +149,8 @@ const WelcomeScreen = ({ onProjectStart }) => {
                   onChange={() => setExpertiseLevel('beginner')}
                 />
                 <label htmlFor="beginner">
-                  <div className="skill-name">Beginner</div>
+                  <div className="skill-icon">🔰</div>
+                  <div className="skill-name">Absolute Beginner</div>
                   <p>I'm new to this technology</p>
                 </label>
               </div>
@@ -130,6 +165,7 @@ const WelcomeScreen = ({ onProjectStart }) => {
                   onChange={() => setExpertiseLevel('intermediate')}
                 />
                 <label htmlFor="intermediate">
+                  <div className="skill-icon">⚙️</div>
                   <div className="skill-name">Intermediate</div>
                   <p>I've built some small projects</p>
                 </label>
@@ -145,6 +181,7 @@ const WelcomeScreen = ({ onProjectStart }) => {
                   onChange={() => setExpertiseLevel('expert')}
                 />
                 <label htmlFor="expert">
+                  <div className="skill-icon">🚀</div>
                   <div className="skill-name">Expert</div>
                   <p>I'm comfortable with advanced concepts</p>
                 </label>
@@ -153,12 +190,11 @@ const WelcomeScreen = ({ onProjectStart }) => {
           </div>
           
           <div className="form-section">
-            <h2>What would you like to build? (Optional)</h2>
+            <h2>Project Idea (Optional)</h2>
             
             <div className="form-group">
-              <label>Describe your project idea, or leave blank for AI suggestions</label>
               <textarea
-                placeholder="E.g., A todo app with authentication, A weather dashboard, etc."
+                placeholder="Describe your project idea, or leave blank for AI suggestions..."
                 value={projectIdea}
                 onChange={(e) => setProjectIdea(e.target.value)}
                 rows="3"
@@ -181,6 +217,24 @@ const WelcomeScreen = ({ onProjectStart }) => {
             )}
           </button>
         </form>
+        
+        <div className="features-section">
+          <div className="feature">
+            <div className="feature-icon">💡</div>
+            <div className="feature-title">AI-Guided Learning</div>
+            <p>Get intelligent hints and solutions as you code</p>
+          </div>
+          <div className="feature">
+            <div className="feature-icon">🛠️</div>
+            <div className="feature-title">Real-Time Feedback</div>
+            <p>Test your code instantly in the browser</p>
+          </div>
+          <div className="feature">
+            <div className="feature-icon">📈</div>
+            <div className="feature-title">Progressive Projects</div>
+            <p>Build complexity as you learn at your own pace</p>
+          </div>
+        </div>
       </div>
     </div>
   );

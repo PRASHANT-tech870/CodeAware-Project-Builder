@@ -778,11 +778,12 @@ const ProjectBuilder = ({ sessionData, onReset }) => {
             sizes={[50, 50]}
             minSize={150}
             direction="vertical"
-            gutterSize={8}
+            gutterSize={10}
             gutterAlign="center"
-            snapOffset={50}
+            snapOffset={30}
             cursor="row-resize"
             dragInterval={1}
+            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
           >
             <div className="editor-container">
               <CodeEditor 
